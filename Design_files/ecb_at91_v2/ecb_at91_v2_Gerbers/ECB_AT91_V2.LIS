@@ -1,0 +1,284 @@
+Post Processor Report
+OrCAD FILE: C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.MAX
+Fri May 30 14:11:13 2008
+
+*********************************************************
+
+Output file: C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.TOP
+*********************************************************
+
+Output file: C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.BOT
+*********************************************************
+
+Output file: C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.GND
+*********************************************************
+
+Output file: C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.PWR
+*********************************************************
+
+Output file: C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.SMT
+
+Aperture totals for C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.SMT:
+---------------------------------------------------------
+D61:  0.0080 ROUND  --     154 Draws,       0 Flashes
+D238: 0.0295 ROUND  --       0 Draws,      44 Flashes
+D260: 0.0500 x 0.0400 RECTANGLE -----      54 Flashes
+D261: 0.0400 x 0.0500 RECTANGLE -----      34 Flashes
+D262: 0.1050 x 0.0650 RECTANGLE -----      14 Flashes
+D263: 0.0650 x 0.1050 RECTANGLE -----       2 Flashes
+D264: 0.0650 ROUND  --       0 Draws,      88 Flashes
+D265: 0.0920 ROUND  --       0 Draws,       2 Flashes
+D266: 0.1350 ROUND  --       0 Draws,       2 Flashes
+D267: 0.0550 ROUND  --       0 Draws,       8 Flashes
+D268: 0.0550 SQUARE --       0 Draws,       3 Flashes
+D269: 0.0620 ROUND  --       0 Draws,      14 Flashes
+D270: 0.0620 SQUARE --       0 Draws,       2 Flashes
+D271: 0.1102 ROUND  --       0 Draws,       2 Flashes
+D272: 0.0110 x 0.0700 OBLONG    -----     235 Flashes
+D273: 0.0670 ROUND  --       0 Draws,      17 Flashes
+D274: 0.1390 ROUND  --       0 Draws,       4 Flashes
+D275: 0.0580 ROUND  --       0 Draws,       1 Flashes
+D276: 0.0580 SQUARE --       0 Draws,       1 Flashes
+D277: 0.0433 ROUND  --       0 Draws,       2 Flashes
+D278: 0.0500 SQUARE --       0 Draws,       4 Flashes
+D279: 0.0700 x 0.0110 OBLONG    -----     216 Flashes
+D280: 0.0700 x 0.0110 RECTANGLE -----      24 Flashes
+D281: 0.0110 x 0.0700 RECTANGLE -----      25 Flashes
+D282: 0.0400 x 0.0600 RECTANGLE -----       1 Flashes
+D283: 0.1550 x 0.0500 RECTANGLE -----       3 Flashes
+D284: 0.0750 x 0.0210 RECTANGLE -----      20 Flashes
+D285: 0.0590 x 0.0138 OBLONG    -----      25 Flashes
+D286: 0.0590 x 0.0138 RECTANGLE -----       3 Flashes
+D287: 0.0200 x 0.0650 RECTANGLE -----      22 Flashes
+D288: 0.0650 x 0.0200 RECTANGLE -----      22 Flashes
+D289: 0.0295 ROUND  --       0 Draws,     408 Flashes
+D290: 0.0295 ROUND  --       0 Draws,      94 Flashes
+D291: 0.0140 ROUND  --       0 Draws,     162 Flashes
+D324: 0.0140 ROUND  --       0 Draws,     562 Flashes
+---------------------------------------------------------
+ 35 D-Codes      -----     154 Draws,    2120 Flashes
+
+*********************************************************
+
+Output file: C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.SMB
+
+Aperture totals for C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.SMB:
+---------------------------------------------------------
+D61:  0.0080 ROUND  --     154 Draws,       0 Flashes
+D238: 0.0295 ROUND  --       0 Draws,      44 Flashes
+D290: 0.0295 ROUND  --       0 Draws,      92 Flashes
+D291: 0.0140 ROUND  --       0 Draws,     162 Flashes
+D293: 0.0500 x 0.0400 RECTANGLE -----     126 Flashes
+D294: 0.0400 x 0.0500 RECTANGLE -----      86 Flashes
+D295: 0.1420 x 0.0650 RECTANGLE -----       4 Flashes
+D296: 0.0650 ROUND  --       0 Draws,      88 Flashes
+D297: 0.0920 ROUND  --       0 Draws,       2 Flashes
+D298: 0.1350 ROUND  --       0 Draws,       2 Flashes
+D299: 0.0550 ROUND  --       0 Draws,       8 Flashes
+D300: 0.0550 SQUARE --       0 Draws,       3 Flashes
+D301: 0.0620 ROUND  --       0 Draws,      14 Flashes
+D302: 0.0620 SQUARE --       0 Draws,       2 Flashes
+D303: 0.1102 ROUND  --       0 Draws,       2 Flashes
+D304: 0.0670 ROUND  --       0 Draws,      17 Flashes
+D305: 0.1390 ROUND  --       0 Draws,       4 Flashes
+D306: 0.0580 ROUND  --       0 Draws,       1 Flashes
+D307: 0.0580 SQUARE --       0 Draws,       1 Flashes
+D308: 0.0433 ROUND  --       0 Draws,       2 Flashes
+D309: 0.0550 x 0.0450 RECTANGLE -----       2 Flashes
+D310: 0.0500 SQUARE --       0 Draws,      10 Flashes
+D311: 0.0236 x 0.0590 RECTANGLE -----     108 Flashes
+D312: 0.0140 x 0.0650 RECTANGLE -----      28 Flashes
+D313: 0.0138 x 0.0394 RECTANGLE -----       5 Flashes
+D314: 0.1550 x 0.0500 RECTANGLE -----       3 Flashes
+D315: 0.0400 x 0.0600 RECTANGLE -----       1 Flashes
+D316: 0.0930 x 0.1470 RECTANGLE -----       1 Flashes
+D317: 0.0930 x 0.0530 RECTANGLE -----       3 Flashes
+D318: 0.0295 ROUND  --       0 Draws,     410 Flashes
+D324: 0.0140 ROUND  --       0 Draws,     562 Flashes
+---------------------------------------------------------
+ 31 D-Codes      -----     154 Draws,    1793 Flashes
+
+*********************************************************
+
+Output file: C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.SST
+*********************************************************
+
+Output file: C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.SSB
+*********************************************************
+
+Output file: C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.AST
+
+Aperture totals for C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.AST:
+---------------------------------------------------------
+D60:  0.0060 ROUND  --    4341 Draws,       0 Flashes
+D61:  0.0080 ROUND  --     964 Draws,       0 Flashes
+D62:  0.0100 ROUND  --     280 Draws,       0 Flashes
+D63:  0.0030 ROUND  --     860 Draws,       0 Flashes
+D64:  0.0050 ROUND  --     204 Draws,       0 Flashes
+D67:  0.0040 ROUND  --    1552 Draws,       0 Flashes
+D99:  0.0020 ROUND  --     592 Draws,       0 Flashes
+D120: 0.0394 ROUND  --       5 Draws,       0 Flashes
+D152: 0.0098 ROUND  --      21 Draws,       0 Flashes
+D260: 0.0500 x 0.0400 RECTANGLE -----      54 Flashes
+D261: 0.0400 x 0.0500 RECTANGLE -----      32 Flashes
+D267: 0.0550 ROUND  --       0 Draws,       8 Flashes
+D268: 0.0550 SQUARE --       0 Draws,       3 Flashes
+D269: 0.0620 ROUND  --       0 Draws,      14 Flashes
+D270: 0.0620 SQUARE --       0 Draws,       2 Flashes
+D271: 0.1102 ROUND  --       0 Draws,       2 Flashes
+D272: 0.0110 x 0.0700 OBLONG    -----     235 Flashes
+D275: 0.0580 ROUND  --       0 Draws,       1 Flashes
+D276: 0.0580 SQUARE --       0 Draws,       1 Flashes
+D278: 0.0500 SQUARE --       0 Draws,       4 Flashes
+D279: 0.0700 x 0.0110 OBLONG    -----     216 Flashes
+D280: 0.0700 x 0.0110 RECTANGLE -----      24 Flashes
+D281: 0.0110 x 0.0700 RECTANGLE -----      25 Flashes
+D285: 0.0590 x 0.0138 OBLONG    -----      25 Flashes
+D286: 0.0590 x 0.0138 RECTANGLE -----       3 Flashes
+D291: 0.0140 ROUND  --       0 Draws,     162 Flashes
+D325: 0.0140 ROUND  --       0 Draws,     562 Flashes
+---------------------------------------------------------
+ 27 D-Codes      -----    8819 Draws,    1373 Flashes
+
+*********************************************************
+
+Output file: C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.ASB
+
+Aperture totals for C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.ASB:
+---------------------------------------------------------
+D60:  0.0060 ROUND  --   10098 Draws,       0 Flashes
+D61:  0.0080 ROUND  --      20 Draws,       0 Flashes
+D62:  0.0100 ROUND  --     130 Draws,       0 Flashes
+D63:  0.0030 ROUND  --     486 Draws,       0 Flashes
+D64:  0.0050 ROUND  --      27 Draws,       0 Flashes
+D67:  0.0040 ROUND  --      20 Draws,       0 Flashes
+D99:  0.0020 ROUND  --      12 Draws,       0 Flashes
+D120: 0.0394 ROUND  --       5 Draws,       0 Flashes
+D291: 0.0140 ROUND  --       0 Draws,     162 Flashes
+D293: 0.0500 x 0.0400 RECTANGLE -----     126 Flashes
+D294: 0.0400 x 0.0500 RECTANGLE -----      84 Flashes
+D299: 0.0550 ROUND  --       0 Draws,       8 Flashes
+D300: 0.0550 SQUARE --       0 Draws,       3 Flashes
+D301: 0.0620 ROUND  --       0 Draws,      14 Flashes
+D302: 0.0620 SQUARE --       0 Draws,       2 Flashes
+D303: 0.1102 ROUND  --       0 Draws,       2 Flashes
+D306: 0.0580 ROUND  --       0 Draws,       1 Flashes
+D307: 0.0580 SQUARE --       0 Draws,       1 Flashes
+D310: 0.0500 SQUARE --       0 Draws,      10 Flashes
+D326: 0.0140 ROUND  --       0 Draws,     562 Flashes
+---------------------------------------------------------
+ 20 D-Codes      -----   10798 Draws,     975 Flashes
+
+*********************************************************
+
+Output file: C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.DRD
+
+Aperture totals for C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.DRD:
+---------------------------------------------------------
+D62:  0.0100 ROUND  --    5988 Draws,       0 Flashes
+D120: 0.0394 ROUND  --       5 Draws,       0 Flashes
+D291: 0.0140 ROUND  --       0 Draws,     162 Flashes
+D320: 0.0140 ROUND  --       0 Draws,     562 Flashes
+---------------------------------------------------------
+  4 D-Codes      -----    5993 Draws,     724 Flashes
+
+*********************************************************
+
+Output file: C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.FAB
+
+Aperture totals for C:\CAIN\OLD\ECBAT91_V2\ECB_AT91_V2.FAB:
+---------------------------------------------------------
+D120: 0.0394 ROUND  --       5 Draws,       0 Flashes
+D253: 0.0118 ROUND  --       0 Draws,      44 Flashes
+D291: 0.0140 ROUND  --       0 Draws,     162 Flashes
+D322: 0.0118 ROUND  --       0 Draws,     408 Flashes
+D323: 0.0118 ROUND  --       0 Draws,      94 Flashes
+D324: 0.0140 ROUND  --       0 Draws,     562 Flashes
+---------------------------------------------------------
+  6 D-Codes      -----       5 Draws,    1270 Flashes
+
+
+*********************************************************
+
+Aperture totals for entire project:
+---------------------------------------------------------
+D60:  0.0060 ROUND  --   14439 Draws,       0 Flashes
+D61:  0.0080 ROUND  --    1292 Draws,       0 Flashes
+D62:  0.0100 ROUND  --    6398 Draws,       0 Flashes
+D63:  0.0030 ROUND  --    1346 Draws,       0 Flashes
+D64:  0.0050 ROUND  --     231 Draws,       0 Flashes
+D67:  0.0040 ROUND  --    1572 Draws,       0 Flashes
+D99:  0.0020 ROUND  --     604 Draws,       0 Flashes
+D120: 0.0394 ROUND  --      20 Draws,       0 Flashes
+D152: 0.0098 ROUND  --      21 Draws,       0 Flashes
+D238: 0.0295 ROUND  --       0 Draws,      88 Flashes
+D253: 0.0118 ROUND  --       0 Draws,      44 Flashes
+D260: 0.0500 x 0.0400 RECTANGLE -----     108 Flashes
+D261: 0.0400 x 0.0500 RECTANGLE -----      66 Flashes
+D262: 0.1050 x 0.0650 RECTANGLE -----      14 Flashes
+D263: 0.0650 x 0.1050 RECTANGLE -----       2 Flashes
+D264: 0.0650 ROUND  --       0 Draws,      88 Flashes
+D265: 0.0920 ROUND  --       0 Draws,       2 Flashes
+D266: 0.1350 ROUND  --       0 Draws,       2 Flashes
+D267: 0.0550 ROUND  --       0 Draws,      16 Flashes
+D268: 0.0550 SQUARE --       0 Draws,       6 Flashes
+D269: 0.0620 ROUND  --       0 Draws,      28 Flashes
+D270: 0.0620 SQUARE --       0 Draws,       4 Flashes
+D271: 0.1102 ROUND  --       0 Draws,       4 Flashes
+D272: 0.0110 x 0.0700 OBLONG    -----     470 Flashes
+D273: 0.0670 ROUND  --       0 Draws,      17 Flashes
+D274: 0.1390 ROUND  --       0 Draws,       4 Flashes
+D275: 0.0580 ROUND  --       0 Draws,       2 Flashes
+D276: 0.0580 SQUARE --       0 Draws,       2 Flashes
+D277: 0.0433 ROUND  --       0 Draws,       2 Flashes
+D278: 0.0500 SQUARE --       0 Draws,       8 Flashes
+D279: 0.0700 x 0.0110 OBLONG    -----     432 Flashes
+D280: 0.0700 x 0.0110 RECTANGLE -----      48 Flashes
+D281: 0.0110 x 0.0700 RECTANGLE -----      50 Flashes
+D282: 0.0400 x 0.0600 RECTANGLE -----       1 Flashes
+D283: 0.1550 x 0.0500 RECTANGLE -----       3 Flashes
+D284: 0.0750 x 0.0210 RECTANGLE -----      20 Flashes
+D285: 0.0590 x 0.0138 OBLONG    -----      50 Flashes
+D286: 0.0590 x 0.0138 RECTANGLE -----       6 Flashes
+D287: 0.0200 x 0.0650 RECTANGLE -----      22 Flashes
+D288: 0.0650 x 0.0200 RECTANGLE -----      22 Flashes
+D289: 0.0295 ROUND  --       0 Draws,     408 Flashes
+D290: 0.0295 ROUND  --       0 Draws,     186 Flashes
+D291: 0.0140 ROUND  --       0 Draws,     972 Flashes
+D293: 0.0500 x 0.0400 RECTANGLE -----     252 Flashes
+D294: 0.0400 x 0.0500 RECTANGLE -----     170 Flashes
+D295: 0.1420 x 0.0650 RECTANGLE -----       4 Flashes
+D296: 0.0650 ROUND  --       0 Draws,      88 Flashes
+D297: 0.0920 ROUND  --       0 Draws,       2 Flashes
+D298: 0.1350 ROUND  --       0 Draws,       2 Flashes
+D299: 0.0550 ROUND  --       0 Draws,      16 Flashes
+D300: 0.0550 SQUARE --       0 Draws,       6 Flashes
+D301: 0.0620 ROUND  --       0 Draws,      28 Flashes
+D302: 0.0620 SQUARE --       0 Draws,       4 Flashes
+D303: 0.1102 ROUND  --       0 Draws,       4 Flashes
+D304: 0.0670 ROUND  --       0 Draws,      17 Flashes
+D305: 0.1390 ROUND  --       0 Draws,       4 Flashes
+D306: 0.0580 ROUND  --       0 Draws,       2 Flashes
+D307: 0.0580 SQUARE --       0 Draws,       2 Flashes
+D308: 0.0433 ROUND  --       0 Draws,       2 Flashes
+D309: 0.0550 x 0.0450 RECTANGLE -----       2 Flashes
+D310: 0.0500 SQUARE --       0 Draws,      20 Flashes
+D311: 0.0236 x 0.0590 RECTANGLE -----     108 Flashes
+D312: 0.0140 x 0.0650 RECTANGLE -----      28 Flashes
+D313: 0.0138 x 0.0394 RECTANGLE -----       5 Flashes
+D314: 0.1550 x 0.0500 RECTANGLE -----       3 Flashes
+D315: 0.0400 x 0.0600 RECTANGLE -----       1 Flashes
+D316: 0.0930 x 0.1470 RECTANGLE -----       1 Flashes
+D317: 0.0930 x 0.0530 RECTANGLE -----       3 Flashes
+D318: 0.0295 ROUND  --       0 Draws,     410 Flashes
+D320: 0.0140 ROUND  --       0 Draws,     562 Flashes
+D322: 0.0118 ROUND  --       0 Draws,     408 Flashes
+D323: 0.0118 ROUND  --       0 Draws,      94 Flashes
+D324: 0.0140 ROUND  --       0 Draws,    1686 Flashes
+D325: 0.0140 ROUND  --       0 Draws,     562 Flashes
+D326: 0.0140 ROUND  --       0 Draws,     562 Flashes
+---------------------------------------------------------
+ 75 D-Codes      -----   25923 Draws,    8255 Flashes
+
+
+No warnings or errors.

@@ -1,0 +1,18 @@
+bootdelay=2
+baudrate=115200
+ethaddr=00:00:00:00:00:5b
+rootpath="/home/at91/rootfs"
+bootfile="ecb_at91.img"
+nfsargs=mem=32M console=ttyS0,115200n8 root=/dev/nfs nfsroot=192.168.0.128:/home/at91/rootfs,timeo=200,retrans=500 ip=:::::eth0:on
+flash_boot=bootm C0020000
+filesize=14fa13
+fileaddr=20200000
+netmask=255.255.255.0
+ipaddr=192.168.0.135
+serverip=192.168.0.128
+bootcmd=bootm C0020000
+bootargs=mem=32M console=ttyS0,115200n8 rootfstype=ext2 root=/dev/mmcblk0p1
+stdin=serial
+stdout=serial
+stderr=serial
+

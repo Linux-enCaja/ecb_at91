@@ -1,0 +1,1 @@
+setenv bootargs mem=16M  console=ttyS0,115200n8 root=/dev/nfs nfsroot=192.168.0.128:/home/at91/rootfs,timeo=200,retrans=500 nfsaddrs=192.168.0.128  ip=192.168.0.113:192.168.0.128:192.160.0.1:255.255.2255.0:ecb_at91:eth0:on init=/sbin/init 

@@ -1,0 +1,4 @@
+ATE1V1Q0
+AT+CGDCONT=1,"IP","web.colombiamovil.com.co"
+ATE1V1Q0
+

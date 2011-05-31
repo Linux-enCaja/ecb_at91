@@ -1,0 +1,612 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" dir="ltr" lang="en"><head>
+
+
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>customizing_u-boot_for_your_own_board [Blackfin uClinux Docs]</title>
+  
+
+    <meta name="generator" content="DokuWiki Release 2006-03-09">
+  <link rel="start" href="http://docs.blackfin.uclinux.org/">
+  <link rel="contents" href="http://docs.blackfin.uclinux.org/doku.php?id=customizing_u-boot_for_your_own_board&amp;do=index" title="">
+  <link rel="alternate" type="application/rss+xml" title="Recent Changes" href="http://docs.blackfin.uclinux.org/feed.php">
+  <link rel="alternate" type="application/rss+xml" title="Current Namespace" href="http://docs.blackfin.uclinux.org/feed.php?mode=list&amp;ns=">
+  <link rel="alternate" type="text/html" title="Plain HTML" href="http://docs.blackfin.uclinux.org/doku.php?id=customizing_u-boot_for_your_own_board&amp;do=export_xhtml">
+  <link rel="alternate" type="text/plain" title="Wiki Markup" href="http://docs.blackfin.uclinux.org/doku.php?id=customizing_u-boot_for_your_own_board&amp;do=export_raw">
+  <meta name="date" content="2006-06-09T14:22:27-0400">
+  <meta name="robots" content="index,follow">
+  <link rel="stylesheet" media="screen" type="text/css" href="u-boot_files/css.php">
+  <link rel="stylesheet" media="print" type="text/css" href="u-boot_files/css_002.php">
+  <script type="text/javascript" charset="utf-8" src="u-boot_files/js.php"></script>
+
+  <link rel="shortcut icon" href="http://docs.blackfin.uclinux.org/lib/tpl/default/images/favicon.ico"></head><body>
+<div class="dokuwiki">
+  
+  <div class="stylehead">
+
+    <div class="header">
+      <div class="pagename">
+        [[<a href="http://docs.blackfin.uclinux.org/doku.php?id=customizing_u-boot_for_your_own_board&amp;do=backlink">customizing_u-boot_for_your_own_board</a>]]
+      </div>
+      <div class="logo">
+        <a href="http://docs.blackfin.uclinux.org/doku.php?id=" name="dokuwiki__top" id="dokuwiki__top" accesskey="h" title="[ALT+H]">Blackfin uClinux Docs</a>      </div>
+
+      <div class="clearer"></div>
+    </div>
+
+    
+    <div class="bar" id="bar__top">
+      <div class="bar-left" id="bar__topleft">
+        <form class="button" method="post" action="/doku.php"><div class="no"><input name="do" value="edit" type="hidden"><input name="rev" value="" type="hidden"><input name="id" value="customizing_u-boot_for_your_own_board" type="hidden"><input value="Show pagesource" class="button" title="ALT+V" accesskey="v" type="submit"></div></form>        <form class="button" method="get" action="/doku.php"><div class="no"><input name="do" value="revisions" type="hidden"><input name="id" value="customizing_u-boot_for_your_own_board" type="hidden"><input value="Old revisions" class="button" title="ALT+O" accesskey="o" type="submit"></div></form>      </div>
+
+      <div class="bar-right" id="bar__topright">
+        <form class="button" method="get" action="/doku.php"><div class="no"><input name="do" value="recent" type="hidden"><input name="id" value="" type="hidden"><input value="Recent changes" class="button" title="ALT+R" accesskey="r" type="submit"></div></form>        <form action="/doku.php?id=" accept-charset="utf-8" class="search" id="dw__search"><div class="no"><input name="do" value="search" type="hidden"><input id="qsearch__in" accesskey="f" name="id" class="edit" type="text"><input value="Search" class="button" type="submit"><div style="display: none;" id="qsearch__out" class="ajax_qsearch JSpopup"></div></div></form>&nbsp;
+      </div>
+
+      <div class="clearer"></div>
+    </div>
+
+        <div class="breadcrumbs">
+      Trace: <span class="bcsep">»</span> <span class="curid"><a href="http://docs.blackfin.uclinux.org/doku.php?id=customizing_u-boot_for_your_own_board" class="breadcrumbs" title="customizing_u-boot_for_your_own_board">customizing_u-boot_for_your_own_board</a></span>          </div>
+    
+    
+  </div>
+  
+  
+  <div class="page">
+    <!-- wikipage start -->
+    <div class="toc">
+<div class="tocheader toctoggle" id="toc__header"><img alt="-" src="u-boot_files/arrow_up.gif" id="toc__hide"><img style="display: none;" alt="+" src="u-boot_files/arrow_down.gif" id="toc__show">Table of Contents</div>
+<div id="toc__inside">
+
+<ul class="toc">
+<li class="level1"><div class="li"><span class="li"><a href="#making_your_own_board_work_with_u-boot" class="toc">Making your own board work with <span class="search_hit">U-Boot</span></a></span></div>
+<ul class="toc">
+<li class="level2"><div class="li"><span class="li"><a href="#config_files" class="toc">Config Files</a></span></div></li>
+<li class="level2"><div class="li"><span class="li"><a href="#main_makefile" class="toc">Main Makefile</a></span></div></li>
+<li class="level2"><div class="li"><span class="li"><a href="#other_configuration" class="toc">Other Configuration</a></span></div></li>
+<li class="level2"><div class="li"><span class="li"><a href="#cresting_your_own_board" class="toc">Cresting your own board</a></span></div>
+<ul class="toc">
+<li class="level3"><div class="li"><span class="li"><a href="#sample_list_of_files_affected_by_config_stamp" class="toc">Sample list of files affected by CONFIG_STAMP</a></span></div></li>
+</ul>
+</li>
+<li class="level2"><div class="li"><span class="li"><a href="#u_boot_startup_sequence" class="toc">U Boot Startup Sequence</a></span></div></li>
+<li class="level2"><div class="li"><span class="li"><a href="#adding_u-boot_commands" class="toc">Adding <span class="search_hit">U-boot</span> <span class="search_hit">command</span>s</a></span></div></li></ul>
+</li></ul>
+</div>
+</div>
+
+<h1><a name="making_your_own_board_work_with_u-boot" id="making_your_own_board_work_with_u-boot">Making your own board work with <span class="search_hit">U-Boot</span></a></h1>
+<div class="level1">
+
+</div>
+
+<h2><a name="config_files" id="config_files">Config Files</a></h2>
+<div class="level2">
+
+<p>
+ Lets call your <span class="search_hit">new</span> board
+“mybf533”. This board will be very much like a BF533_STAMP board but
+with a few changes. In order to do this, we can copy the <code>board/stamp</code> to <code>board/mybf533</code>.
+</p>
+
+<p>
+</p>
+<div class="box round blue" style="width: 100%;">
+  <b class="xtop"><b class="xb1"></b><b class="xb2"></b><b class="xb3"></b><b class="xb4"></b></b>
+  <div class="xbox">
+<p class="box_title">on the host, or development computer</p>
+<div class="box_content"><p></p><pre><font size="-0">rgetz@test:~/checkouts/uboot/<span class="search_hit">u-boot</span>_1.1.3/boards&gt; <strong>cp ./stamp ./mybf533</strong>
+rgetz@test:~/checkouts/uboot/<span class="search_hit">u-boot</span>_1.1.3/boards&gt;</font></pre></div>
+  </div>
+  <b class="xbottom"><b class="xb4"></b><b class="xb3"></b><b class="xb2"></b><b class="xb1"></b></b>
+</div>
+<p>
+</p>
+
+<p>
+The basic board will need a <span class="search_hit">new</span> <code>config.mk</code> file. The orginal file looks like:
+</p>
+<div class="source"><p>file: <span><a href="http://blackfin.uclinux.org/plugins/scmcvs/cvsweb.php/u-boot_1.1.3?cvsroot=uboot533"><span class="search_hit">u-boot</span>_1.1.3</a>/<a href="http://blackfin.uclinux.org/plugins/scmcvs/cvsweb.php/u-boot_1.1.3/board?cvsroot=uboot533">board</a>/<a href="http://blackfin.uclinux.org/plugins/scmcvs/cvsweb.php/u-boot_1.1.3/board/stamp?cvsroot=uboot533">stamp</a>/<a href="http://blackfin.uclinux.org/plugins/scmcvs/cvsweb.php/u-boot_1.1.3/board/stamp/config.mk?cvsroot=uboot533">config.mk</a>:<a href="http://blackfin.uclinux.org/plugins/scmcvs/cvsweb.php/u-boot_1.1.3/board/stamp/config.mk?rev;content-type=text%2Fplain;cvsroot=uboot533">23-27</a></span></p><pre class="code c"><span class="co2"># TEXT_BASE should be defined as the MAX_SDRAM Address - 256k bytes</span>
+<span class="co2">#  256k is defined as CFG_MONITOR_LEN in ./include/configs/&lt;board&gt;.h</span>
+TEXT_BASE = 0x07FC0000
+PLATFORM_CPPFLAGS += -I$<span class="br0">(</span>TOPDIR<span class="br0">)</span></pre></div>
+<p>
+By adjusting the following lines, tells <span class="search_hit">U-Boot</span> that the board has less SDRAM on it. <code>TEXT_BASE</code> defines where <span class="search_hit">U-Boot</span> locates itself in SDRAM. :
+</p>
+<pre class="code c"><span class="co2"># TEXT_BASE should be defined as the MAX_SDRAM Address - 256k bytes</span>
+<span class="co2">#  256k is defined as CFG_MONITOR_LEN in ./include/configs/&lt;board&gt;.h</span>
+<span class="co2"># move the start address of uboot to suit a 64M memory layout.</span>
+<span class="co2">#TEXT_BASE = 0x07FC0000 old value</span>
+TEXT_BASE = 0x03FC0000
+PLATFORM_CPPFLAGS += -I$<span class="br0">(</span>TOPDIR<span class="br0">)</span></pre>
+<p>
+Note that this code assumes that the length of <span class="search_hit">u-boot</span> is less than 256K 
+</p>
+
+<p>
+ The main make file needs to have a target added to specify the <span class="search_hit">new</span>  config file
+</p>
+
+<p>
+The file <code><strong>include/config.mk</strong></code> is automatically generated by the <strong>mkconfig</strong> script
+</p>
+
+<p>
+It will define  $ARCH $CPU $BOARD (and possibly $SoC and $VENDOR)
+</p>
+<pre class="code text">ARCH   = blackfin
+CPU    = bf533
+BOARD  = mybf533
+&nbsp;</pre>
+<p>
+These set up all the specific configurations for a <span class="search_hit">new</span> board.
+</p>
+
+<p>
+<strong>blackfin_config.mk</strong> contains some special compiler options.
+</p>
+<pre class="code text">PLATFORM_CPPFLAGS += -DCONFIG_BLACKFIN -D__blackfin__
+&nbsp;</pre>
+<p>
+So does <strong>cpu/$bf533/config.mk</strong>  
+</p>
+<pre class="code text">PLATFORM_RELFLAGS += -ffixed-P5
+&nbsp;</pre>
+</div>
+
+<h2><a name="main_makefile" id="main_makefile">Main Makefile</a></h2>
+<div class="level2">
+
+<p>
+ To allow the system configuration to take place a <span class="search_hit">new</span> <span class="search_hit">command</span> is added to the main <span class="search_hit">u-boot</span> makefile
+</p>
+<pre class="code text">#########################################################################
+## Blackfin
+#########################################################################
+ezkit533_config :       unconfig
+        @./mkconfig $(@:_config=) blackfin bf533 ezkit533
+&nbsp;
+ezkit561_config :       unconfig
+        @./mkconfig $(@:_config=) blackfin bf533 ezkit561
+&nbsp;
+stamp_config    :       unconfig
+        @./mkconfig $(@:_config=) blackfin bf533 stamp
+&nbsp;
+## <span class="search_hit">New</span> mybf533 target
+mybf533_config :       unconfig
+        @./mkconfig $(@:_config=) blackfin bf533 mybf533
+&nbsp;</pre>
+<p>
+ Once this is in place the <span class="search_hit">new</span> board can be configured using the following <span class="search_hit">command</span>:
+</p>
+<pre class="code text">$ make mybf533_config  
+&nbsp;</pre>
+</div>
+
+<h2><a name="other_configuration" id="other_configuration">Other Configuration</a></h2>
+<div class="level2">
+
+<p>
+ Before the <span class="search_hit">new</span> make <span class="search_hit">command</span> can be used , <span class="search_hit">how</span>ever, some more configuration is needed. Since the <span class="search_hit">new</span> board is very much like the stamp board you can use the stamp as a template for most of the <span class="search_hit">new</span> board’s files.
+</p>
+
+<p>
+copy <strong>include/configs/stamp.h</strong> to <strong>include/configs/mybf533.h</strong>
+</p>
+<pre class="code text">#define CONFIG_MEM_SIZE			64
+&nbsp;
+#define CONFIG_CLKIN_HZ			24000000
+#define CONFIG_CLKIN_HALF		0
+#define CONFIG_PLL_BYPASS       	0
+&nbsp;
+...
+&nbsp;</pre>
+</div>
+
+<h2><a name="cresting_your_own_board" id="cresting_your_own_board">Cresting your own board</a></h2>
+<div class="level2">
+
+<p>
+The steps to <span class="search_hit">create</span> your own board are now summarised
+</p>
+
+</div>
+
+<h4><a name="basic_steps" id="basic_steps">Basic Steps</a></h4>
+<div class="level4">
+
+<p>
+ Call the <span class="search_hit">new</span> board “mybf533”
+</p>
+<ul>
+<li class="level1"><div class="li"> <span class="search_hit">create</span> <strong>include/configs/mybf53.h</strong> using <strong>include/configs/stamp.h</strong> as a template</div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <span class="search_hit">create</span>
+a define for CONFIG_MYBF533 this can then be used in common files to
+modify the system for your board. Look for all instances of
+CONFIG_STAMP and make sure you add changes to suit your board.</div>
+</li>
+</ul>
+
+</div>
+
+<h3><a name="sample_list_of_files_affected_by_config_stamp" id="sample_list_of_files_affected_by_config_stamp">Sample list of files affected by CONFIG_STAMP</a></h3>
+<div class="level3">
+<pre class="code text">./cpu/bf533/cpu.c:                setup dcplb and icplb tables 
+                                  i and d cache enable / disable
+./cpu/bf533/bf533_serial.h:       define extern pll_div_fact
+./lib_blackfin/board.c:           first c code to be called after cpu init
+./board/mybf533/mybf533.c:        board specific init functions
+./tools/environment.c:            generates default environment
+./drivers/cfi_flash.c:            controls flash access
+./common/environment.c:           generates default environment
+./include/configs/mybf533.h:      main configuration file
+./include/asm-blackfin/hw_irq.h:  include specific irw definitions
+./include/asm-blackfin/cplbtab.h: cplb table default definitions
+&nbsp;</pre><ul>
+<li class="level1"><div class="li"> <span class="search_hit">create</span> or modify other important defines such as</div>
+<ul>
+<li class="level2"><div class="li"> ETHERNET DRIVER</div>
+</li>
+<li class="level2"><div class="li"> CLOCK Settings </div>
+</li>
+<li class="level2"><div class="li"> Flash Base Address</div>
+</li>
+<li class="level2"><div class="li"> Uboot Environment base Address and Size</div>
+</li>
+<li class="level2"><div class="li"> Network Settings</div>
+</li>
+<li class="level2"><div class="li"> Default Environment Settings ( in #define CONFIG_EXTRA_ENV_SETTINGS )</div>
+</li>
+<li class="level2"><div class="li"> Console Baudrate</div>
+</li>
+<li class="level2"><div class="li"> <span class="search_hit">Command</span> Config Definitions</div>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> Modify main Makefile to add config for your board. Add the following lines so you can run <code>make mybf533_config</code>:</div>
+</li>
+</ul>
+<pre class="code text">mybf533_config	:	unconfig
+	@./mkconfig $(@:_config=) blackfin bf533 mybf533
+&nbsp;</pre><ul>
+<li class="level1"><div class="li"> <span class="search_hit">Create</span> your own board directory</div>
+</li>
+</ul>
+<pre class="code text">$ mkdir board/mybf533
+&nbsp;</pre><ul>
+<li class="level1"><div class="li"> copy the default files to it</div>
+</li>
+</ul>
+<pre class="code text">$ cp -a board/stamp/* board/mybf533/
+&nbsp;</pre><ul>
+<li class="level1"><div class="li"> change references of stamp.c / stamp.h to mybf533.c / mybf533.h</div>
+</li>
+<li class="level2"><div class="li"> put all special board specific features in this file</div>
+</li>
+<li class="level2"><div class="li"> modify the <strong>board/mybf533/Makefile</strong> </div>
+</li>
+<li class="level2"><div class="li"> to specify the <span class="search_hit">new</span> library for your board</div>
+</li>
+</ul>
+<pre class="code text">include $(TOPDIR)/config.mk
+&nbsp;
+LIB     = lib$(BOARD).a
+&nbsp;
+OBJS    = $(BOARD).o flash.o mybf533.o spi.o
+SOBJS   =
+&nbsp;
+$(LIB): .depend $(OBJS)
+        $(AR) crv $@ $(OBJS)
+&nbsp;</pre><ul>
+<li class="level1"><div class="li"> Modify config.mk to suit your
+memory layout. This file contains the start address of uboot. Typically
+the image will be built to reside at the upper part of memory.</div>
+</li>
+</ul>
+<pre class="code text"># TEXT_BASE should be defined as the MAX_SDRAM Address - 256k bytes
+#  256k is defined as CFG_MONITOR_LEN in ./include/configs/&lt;board&gt;.h
+# TEXT_BASE was 0X07FC0000  for the stamp
+TEXT_BASE = 0x03FC0000
+PLATFORM_CPPFLAGS += -I$(TOPDIR)
+&nbsp;</pre>
+</div>
+
+<h4><a name="additional_considerations" id="additional_considerations">Additional Considerations</a></h4>
+<div class="level4">
+
+<p>
+ You may need to adjust some other files to suit your board hardware. 
+</p>
+<ul>
+<li class="level1"><div class="li"> Flash Access</div>
+<ul>
+<li class="level2"><div class="li"> Flash access is modified in a common file <strong>common/flash.c</strong></div>
+</li>
+<li class="level2"><div class="li"> This uses the <strong>flash_info_t *info</strong> structure</div>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> Memory Access and CPLD’s </div>
+<ul>
+<li class="level2"><div class="li"> These are set up in a file in the <strong>cpu/bf533</strong> directory.</div>
+</li>
+<li class="level2"><div class="li"> The file  <strong>cpu/bf533/cpu.c</strong> defines Data and instruction CPLD’s</div>
+</li>
+</ul>
+</li>
+</ul>
+<pre class="code text">#define SDRAM_EBIU              
+(PAGE_SIZE_4MB 
+| CPLB_WT 
+| CPLB_L1_AOW 
+| CPLB_USER_RD 
+| CPLB_USER_WR 
+| CPLB_SUPV_WR 
+| CPLB_VALID 
+| ANOMALY_05000158
+)
+#define SDRAM_IKERNEL           
+(PAGE_SIZE_4MB 
+| CPLB_L1_CHBL 
+| CPLB_USER_RD 
+| CPLB_VALID 
+| CPLB_LOCK)
+&nbsp;
+#define L1_DMEMORY              
+(PAGE_SIZE_4KB 
+| CPLB_L1_CHBL 
+| CPLB_L1_AOW 
+| CPLB_WT 
+| CPLB_SUPV_WR 
+| CPLB_USER_WR 
+| CPLB_VALID 
+| ANOMALY_05000158)
+&nbsp;
+#define L1_IMEMORY              
+(PAGE_SIZE_1MB 
+| CPLB_L1_CHBL 
+| CPLB_USER_RD 
+| CPLB_VALID 
+| CPLB_LOCK)
+&nbsp;
+#define SDRAM_IGENERIC          
+(PAGE_SIZE_4MB 
+| CPLB_L1_CHBL 
+| CPLB_USER_RD 
+| CPLB_VALID)
+&nbsp;
+&nbsp;
+icplb_table[16][2]={
+{0xFFA00000, L1_IMEMORY},
+{0x00000000, SDRAM_IKERNEL},    /*SDRAM_Page1*/
+{0x00400000, SDRAM_IKERNEL},    /*SDRAM_Page1*/
+#ifdef CONFIG_STAMP
+{0x07C00000, SDRAM_IKERNEL},    /*SDRAM_Page14*/
+#else
+{0x03C00000, SDRAM_IKERNEL},    /*SDRAM_Page14*/
+#endif
+&nbsp;
+{0x00800000, SDRAM_IGENERIC},   /*SDRAM_Page2*/
+{0x00C00000, SDRAM_IGENERIC},   /*SDRAM_Page2*/
+{0x01000000, SDRAM_IGENERIC},   /*SDRAM_Page4*/
+{0x01400000, SDRAM_IGENERIC},   /*SDRAM_Page5*/
+{0x01800000, SDRAM_IGENERIC},   /*SDRAM_Page6*/
+{0x01C00000, SDRAM_IGENERIC},   /*SDRAM_Page7*/
+{0x02000000, SDRAM_IGENERIC},   /*SDRAM_Page8*/
+{0x02400000, SDRAM_IGENERIC},   /*SDRAM_Page9*/
+{0x02800000, SDRAM_IGENERIC},   /*SDRAM_Page10*/
+{0x02C00000, SDRAM_IGENERIC},   /*SDRAM_Page11*/
+{0x03000000, SDRAM_IGENERIC},   /*SDRAM_Page12*/
+{0x03400000, SDRAM_IGENERIC},   /*SDRAM_Page13*/
+&nbsp;</pre>
+</div>
+
+<h2><a name="u_boot_startup_sequence" id="u_boot_startup_sequence">U Boot Startup Sequence</a></h2>
+<div class="level2">
+
+<p>
+The following sequence of files defines the startup sequence for <span class="search_hit">U-boot</span>
+</p>
+
+<p>
+ The start up sequence for the BF533 is as follows
+</p>
+<pre class="code text">cpu/bf533/start.S : inits pll / sdram and relocates from flash to Ram
+                    enabled icache and dcache, sets up stack
+                    jumps to _start1
+&nbsp;
+cpu/bf533/start1.S : completes init after relocate to ram
+                     calls    board_init_f;
+&nbsp;
+lib_blackfin/board.c: runs **board_init_f** **board_init_r** to initialize the whole
+                      system and finally calls **main_loop** to run the boot 
+                      <span class="search_hit">command</span> line parser
+&nbsp;</pre><pre class="code"> Specific Init functions and the files associated with them</pre>
+<pre class="code text">init_IRQ()              cpu/bf533/ints.c 
+flash_init()            drivers/cfi_flash.c
+env_init()              common/env_flash.c
+init_baudrate()         lib_blackfin/board.c
+serial_init()           cpu/bf533/serial.c
+console_init_f()        common/console.c 
+display_banner()        lib_blackfin/board.c
+checkboard()            board/stamp/stamp.c
+timer_init()            cpu/bf533/interrupts.c
+&nbsp;</pre>
+</div>
+
+<h4><a name="checking_the_startup_sequence" id="checking_the_startup_sequence">Checking the Startup Sequence</a></h4>
+<div class="level4">
+
+<p>
+ You can check this sequence using <strong>bfin-uclinux-objdump</strong> to disassemble object files
+</p>
+<pre class="code text">__Check a particular file__
+&nbsp;
+$ bfin-uclinux-objdump -D cpu/bf533/start.o | more  
+&nbsp;
+Disassembly of section .text:
+&nbsp;
+00000000 &lt;_start&gt;:
+   0:   20 e1 61 00     R0=0x61 (X);
+   4:   ff e3 fe ff     CALL  0 &lt;_start&gt;;
+   8:   90 61           R0=0x32(x);
+   a:   10 3e           SYSCFG=R0;
+   c:   24 00           SSYNC;
+   e:   01 60           R1=0x0(x);
+  10:   02 60           R2=0x0(x);
+  12:   03 60           R3=0x0(x);
+  14:   04 60           R4=0x0(x);
+  16:   05 60           R5=0x0(x);
+  18:   06 60           R6=0x0(x);
+  1a:   07 60           R7=0x0(x);
+&nbsp;
+&nbsp;
+__Check the <span class="search_hit">u-boot</span> elf image__
+&nbsp;
+$ bfin-uclinux-objdump -D <span class="search_hit">u-boot</span> | more              
+&nbsp;
+Disassembly of section .text:
+&nbsp;
+03fc0000 &lt;_start&gt;:
+ 3fc0000:       20 e1 61 00     R0=0x61 (X);
+ 3fc0004:       00 e3 b2 06     CALL  3fc0d68 &lt;putch&gt;;
+ 3fc0008:       90 61           R0=0x32(x);
+ 3fc000a:       10 3e           SYSCFG=R0;
+ 3fc000c:       24 00           SSYNC;
+ 3fc000e:       01 60           R1=0x0(x);
+ 3fc0010:       02 60           R2=0x0(x);
+ 3fc0012:       03 60           R3=0x0(x);
+ 3fc0014:       04 60           R4=0x0(x);
+ 3fc0016:       05 60           R5=0x0(x);
+&nbsp;</pre>
+</div>
+
+<h2><a name="adding_u-boot_commands" id="adding_u-boot_commands">Adding <span class="search_hit">U-boot</span> <span class="search_hit">command</span>s</a></h2>
+<div class="level2">
+
+<p>
+ You can  <span class="search_hit">create</span> your own uboot <span class="search_hit">command</span>s.
+</p>
+
+<p>
+The directory  <strong>common</strong> contains the sources for many <span class="search_hit">command</span>s
+</p>
+
+<p>
+ Add the name of the <span class="search_hit">new</span> <span class="search_hit">command</span> file  cmd_xxx.o file to the list of COBJS in <strong>common/Makefile</strong> to include additional objects in the <span class="search_hit">u-boot</span> image.
+</p>
+
+<p>
+ A <span class="search_hit">command</span> is added to the system
+at link time by adding some special code to a regular “C” file. You can
+specify a max number of arguments and if the <span class="search_hit">command</span> can be repeated or remembered by the system.
+</p>
+
+<p>
+A remembered <span class="search_hit">command</span> will be repeated if a blank <span class="search_hit">command</span> is issued after the first instance of the <span class="search_hit">command</span>.
+</p>
+<pre class="code c"><span class="co2">#include &lt;common.h&gt;</span>
+<span class="co2">#include &lt;asm/blackfin.h&gt;</span>
+<span class="co2">#include &lt;<span class="search_hit">command</span>.h&gt;</span>
+&nbsp;
+U_BOOT_CMD<span class="br0">(</span>
+        mycmd,                               <span class="co1">// name </span>
+	<span class="nu0">2</span>,                                   <span class="co1">// max args</span>
+	<span class="nu0">1</span>,                                   <span class="co1">// rep </span>
+	do_mycmd,                            <span class="co1">// <span class="search_hit">command</span> function</span>
+        <span class="st0">"mycmd - my test <span class="search_hit">command</span>   <span class="es0">\n</span>"</span>,      <span class="co1">// <span class="search_hit">command</span> usage</span>
+        <span class="st0">"      A test <span class="search_hit">command</span> example <span class="es0">\n</span>"</span>    <span class="co1">// <span class="search_hit">command</span> help</span>
+<span class="br0">)</span>;</pre>
+<p>
+A typical <span class="search_hit">command</span> function is s<span class="search_hit">how</span>n below. You will need to add code to interpret the <span class="search_hit">command</span> arguments.
+</p>
+<pre class="code c"><span class="kw4">int</span> do_mycmd<span class="br0">(</span>cmd_tbl_t *cmdtp, <span class="kw4">int</span> flag, <span class="kw4">int</span> argc, <span class="kw4">char</span> *argv<span class="br0">[</span><span class="br0">]</span><span class="br0">)</span>
+<span class="br0">{</span>
+    <span class="co1">// flag used to hold system information ( not normally used )</span>
+    <span class="co1">// argc  = count of additional args</span>
+    <span class="co1">// argv = list of <span class="search_hit">command</span>s</span>
+    <span class="co1">//... add <span class="search_hit">command</span> code as required...</span>
+&nbsp;
+    <span class="kw1">return</span> <span class="nu0">0</span>;       <span class="co1">// if the <span class="search_hit">command</span> is OK</span>
+<span class="br0">}</span></pre>
+</div>
+    <!-- wikipage stop -->
+  </div>
+
+  <div class="clearer">&nbsp;</div>
+
+  
+  <div class="stylefoot">
+
+    <div class="meta">
+      <div class="user">
+              </div>
+      <div class="doc">
+        customizing_u-boot_for_your_own_board.txt · Last modified: 2006/06/09 14:22 by rgetz      </div>
+    </div>
+
+   
+    <div class="bar" id="bar__bottom">
+      <div class="bar-left" id="bar__bottomleft">
+        <form class="button" method="post" action="/doku.php"><div class="no"><input name="do" value="edit" type="hidden"><input name="rev" value="" type="hidden"><input name="id" value="customizing_u-boot_for_your_own_board" type="hidden"><input value="Show pagesource" class="button" title="ALT+V" accesskey="v" type="submit"></div></form>        <form class="button" method="get" action="/doku.php"><div class="no"><input name="do" value="revisions" type="hidden"><input name="id" value="customizing_u-boot_for_your_own_board" type="hidden"><input value="Old revisions" class="button" title="ALT+O" accesskey="o" type="submit"></div></form>      </div>
+      <div class="bar-right" id="bar__bottomright">
+                                <form class="button" method="get" action="/doku.php"><div class="no"><input name="do" value="login" type="hidden"><input name="id" value="customizing_u-boot_for_your_own_board" type="hidden"><input value="Login" class="button" type="submit"></div></form>        <form class="button" method="get" action="/doku.php"><div class="no"><input name="do" value="index" type="hidden"><input name="id" value="customizing_u-boot_for_your_own_board" type="hidden"><input value="Index" class="button" title="ALT+X" accesskey="x" type="submit"></div></form>        <a href="#dokuwiki__top"><input class="button" value="Back to top" onclick="window.scrollTo(0, 0)" type="button"></a>&nbsp;
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="footerinc">
+  <a href="http://docs.blackfin.uclinux.org/feed.php" title="Recent changes RSS feed"><img src="u-boot_files/button-rss.png" alt="Recent changes RSS feed" height="15" width="80"></a>
+
+  <a href="http://creativecommons.org/licenses/by-nc-sa/2.0/" rel="license" title="Creative Commons License"><img src="u-boot_files/button-cc.gif" alt="Creative Commons License" height="15" width="80"></a>
+
+  <a target="_blank" href="http://www.gnu.org/licenses/gpl.html" rel="license" title="GNU General Public License"> <img src="u-boot_files/button-gnu.gif" alt="GNU General Public License" border="0" height="15" width="80"></a>
+
+  <a href="http://www.php.net/" title="Powered by PHP"><img src="u-boot_files/button-php.gif" alt="Powered by PHP" height="15" width="80"></a>
+
+  <a href="http://validator.w3.org/check/referer" title="Valid XHTML 1.0"><img src="u-boot_files/button-xhtml.png" alt="Valid XHTML 1.0" height="15" width="80"></a>
+
+  <a href="http://jigsaw.w3.org/css-validator/check/referer" title="Valid CSS"><img src="u-boot_files/button-css.png" alt="Valid CSS" height="15" width="80"></a>
+
+  <a href="http://wiki.splitbrain.org/wiki:dokuwiki" title="Driven by DokuWiki"><img src="u-boot_files/button-dw.png" alt="Driven by DokuWiki" height="15" width="80"></a>
+
+
+
+<!--
+
+<rdf:RDF xmlns="http://web.resource.org/cc/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<Work rdf:about="">
+   <dc:type rdf:resource="http://purl.org/dc/dcmitype/Text" />
+   <license rdf:resource="http://creativecommons.org/licenses/by-nc-sa/2.0/" />
+</Work>
+
+<License rdf:about="http://creativecommons.org/licenses/by-nc-sa/2.0/">
+   <permits rdf:resource="http://web.resource.org/cc/Reproduction" />
+   <permits rdf:resource="http://web.resource.org/cc/Distribution" />
+   <requires rdf:resource="http://web.resource.org/cc/Notice" />
+   <requires rdf:resource="http://web.resource.org/cc/Attribution" />
+   <prohibits rdf:resource="http://web.resource.org/cc/CommercialUse" />
+   <permits rdf:resource="http://web.resource.org/cc/DerivativeWorks" />
+   <requires rdf:resource="http://web.resource.org/cc/ShareAlike" />
+</License>
+
+</rdf:RDF>
+
+-->
+</div>
+
+<div class="no"><img src="u-boot_files/indexer.php" alt="" height="1" width="1"></div>
+</body></html>

@@ -1,0 +1,36 @@
+**************************
+ecbot side:
+**************************
+edit /etc/opkg/arch.conf 
+
+arch all 1
+arch armv4t 21
+arch ecbat91 26
+
+
+
+edit/create base-feed.conf
+src/gz base http://192.168.0.128/ipk/armv4t
+
+edit/create ecbat91-feed.conf:
+src/gz ecbat91 http://192.168.0.128/ipk/ecbat91
+
+
+*****************************************
+Host side (192.168.0.128 in this example) 	
+*****************************************
+After each new package created with bitbake run:
+bitbake package-index
+
+This update the Package.gz in:
+tmp/deploy/glibc/ipk/
+tmp/deploy/glibc/ipk/all/
+tmp/deploy/glibc/ipk/armv4t/
+tmp/deploy/glibc/ipk/ecbat91/ 
+
+
+make a link in your webserver directory:
+cd /var/www
+sudo ln -s /home/at91/oe_old/at91/tmp/deploy/glibc/ipk/ ipk
+
+

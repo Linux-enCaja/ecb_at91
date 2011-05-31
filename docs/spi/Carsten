@@ -1,0 +1,95 @@
+I've had some troubles using the drivers/char/at91_spidev.c
+driver because of a cache problem (Kernel 2.6.17.1 with
+maxim.org.za patches):
+
+In function spidev_rd_wr() the following change was necessary for me:
+
+   down_read(&mm->mmap_sem);
+->  flush_cache_all();               <-
+   err= get_user_pages(current, mm, (unsigned long)buf, pgcount, 1, 0, maplist, NULL);
+   up_read(&mm->mmap_sem);
+
+The line in -> <- is new. I know that this hurts performance
+dramatically, but I currently don't know how to do it correct (just read
+this proposal in this mailing list some time ago).
+
+I use this driver to access an ADNS-2610 (optical mouse sensor) directly
+as motion sensor. This hardware does not really have a SPI interface,
+only something that is near to a SPI interface, therefore some 74xx
+adaption logic circuitry was necessary (see for yourself on:
+http://www.siski.de/~carsten/diplomarbeit.html).
+
+Actually I didn't add needed ioctl's to set the necessary parameters but
+changed it in at91_spi.c in the same directory (function at91spi_probe())
+ - there is a loop in this function:
+
+   /* Set Chip Select registers to good defaults */
+   for (i = 0; i < 4; i++) {
+       at91_spi_write(AT91_SPI_CSR(i), AT91_SPI_CPOL | AT91_SPI_BITS_8 | (16 << 16) | (scbr << 8));
+   }
+
+Normally you have to adjust the transfer parameters as needed for your
+device (perhaps the timing, perhaps the mode and clock phase). I've just
+added it below the loop.
+
+The best thing would be to add ioctl's to the at91_spidev interface to
+adjust it as needed.
+
+The next thing you should check is wether your bootloader correctly
+initializes the PAxx lines needed for SPI to be peripheral function A,
+especially the NPCS0...3 lines if needed. Checking with the oszilloscope
+revealed the I also needed the integrated pullup-resistors for SCK and
+MOSI (changed it in arch/arm/mach-at91rm9200/devices.c). I expect this
+being specific for my board here, but you could check to be sure.
+
+After you've looked at all this you can create a device to access a SPI
+device with /CS0 set to low if accessed:
+
+mknod /dev/spi0 c 153 0
+
+Use userspace code like this (Example for the above sensor, very simple
+interface, every access is 16 bit in size, first 8 bit are register
+address, second 8 bit are register data, if MSB is set: register write,
+else: register read):
+
+   /* open device file */
+
+   spifd = open("/dev/spi0", O_RDWR);
+   if (spifd < 0) {
+       perror("open(/dev/spi0)");
+       exit(1);
+   }
+   send(0x80, 0x80);   /* soft reset chip */
+   send(0x80, 0x01);   /* power on */
+   qual = recv(0x04);     /* get image quality */
+   /* ... and so on  ... */
+
+/* write d to register a */
+void send(unsigned char a,unsigned char d) {
+   char z[2];
+   z[0] = a;
+   z[1] = d;
+   if ( write(spifd, z, 2) < 0) {
+       perror("write");
+       exit(1);
+   }
+   return;
+}
+
+/* read register a */
+
+unsigned char recv(unsigned char a) {
+   char z[2];
+   z[1] = 0x00; /* we don't have open drain logic on OUR board, the 0 can be overridden, not 1 */
+   z[0] = (a & 0x7f);
+   /* write does also a read, as read does also write */
+   if ( write(spifd, z, 2) < 0) {
+       perror("write(*)");
+       exit(1);
+   }
+   return z[1];
+}
+
+Hope this helps,
+
+  Carsten

@@ -1,0 +1,823 @@
+/****************************************************************************
+*
+*   Copyright (c) 2006 Dave Hylands     <dhylands@gmail.com>
+*
+*   This program is free software; you can redistribute it and/or modify
+*   it under the terms of the GNU General Public License version 2 as
+*   published by the Free Software Foundation.
+*
+*   Alternatively, this software may be distributed under the terms of BSD
+*   license.
+*
+*   See README and COPYING for more details.
+*
+****************************************************************************/
+/**
+*
+*  robostix_drv.c
+*
+*  PURPOSE:
+*
+*   This implements a driver for using the robostix from the gumstix
+*
+*   Initially, this contains the required support to emulate enough of the
+*   parallel port interface to allow avrdude to program the ATMega128.
+*
+*****************************************************************************/
+
+/* ---- Include Files ---------------------------------------------------- */
+
+#include <linux/module.h>
+#include <linux/init.h>
+#include <linux/fs.h>
+
+#include <linux/parport.h>
+#include <linux/ppdev.h>
+#include <linux/sysctl.h>
+#include <linux/cdev.h>
+#include <linux/device.h>
+
+#include <asm/delay.h>
+#include <asm/uaccess.h>
+
+#include <asm/arch/hardware.h>
+#include <asm/leds.h>
+#include <asm/arch/gpio.h>
+
+#include "robostix_drv.h"
+
+/****************************************************************************
+*
+*   This driver assumes that the robostix uses the following GPIO pins:
+*
+*   Robostix gumstix    ATmega 
+*   Symbol     GPIO Dir Symbol          Description
+*   ---------- ---- --- --------------  -------------------------------------
+*   IR_RXD      46  in  ATM_TX0 PE1     Acts as PDO or MISO for programming
+*   IR_TXD      47  out ATM_RX0 PE0     Acts as PDI or MOSI for programming
+*
+*
+* The following shows the mapping of the SPI port for the gumstix:
+*
+*   NSSPCLK     81  out ATM_SCK         Acts as SCK for SPI use
+*   NSSPFRAME   82  out ATM_SS          Acts as SS for SPI use
+*   X_MOSI      83  out ATM_MOSI        Acts as MOSI for SPI use
+*   X_MISO      84  in  ATM_MISO        Acts as MISO for SPI use
+*****************************************************************************/
+
+//---------------------------------------------------------------------------
+//
+//  This was extracted from avrdude, and it gives the pin configuration for
+//  AVR Dude's default programmer. UISP calls it "BSD"
+//  This is what I've chosen for this driver to implement.
+
+#if 0
+programmer
+  id    = "bsd";
+  desc  = "Brian Dean's Programmer, http://www.bsdhome.com/avrdude/";
+  type  = par;
+  vcc   = 2, 3, 4, 5;
+  reset = 7;
+  sck   = 8;
+  mosi  = 9;
+  miso  = 10;
+;
+#endif
+//---------------------------------------------------------------------------
+//
+//  The following was extracted from avrdude. It basically gives the pin
+//  number to register mapping that is in effect for the parallel port.
+//
+//  I added the comments on the right which shows pin usage for the default
+//  programmer.
+//
+//  From this, we can glean that the Control register is never used, and none
+//  of the signals which are used are inverted.
+//
+//  Furthermore, all of the Data accesses are writes and all of the Status
+//  accesses are reads.
+
+#if 0
+struct ppipins_t {
+  int pin;
+  int reg;
+  int bit;
+  int inverted;
+};
+
+static struct ppipins_t pins[] = {
+  {  1, PPICTRL,   0x01, 1 },
+  {  2, PPIDATA,   0x01, 0 },   // Vcc
+  {  3, PPIDATA,   0x02, 0 },   // Vcc
+  {  4, PPIDATA,   0x04, 0 },   // Vcc
+  {  5, PPIDATA,   0x08, 0 },   // Vcc
+  {  6, PPIDATA,   0x10, 0 },
+  {  7, PPIDATA,   0x20, 0 },   // Reset
+  {  8, PPIDATA,   0x40, 0 },   // SCK
+  {  9, PPIDATA,   0x80, 0 },   // MOSI
+  { 10, PPISTATUS, 0x40, 0 },   // MISO
+  { 11, PPISTATUS, 0x80, 1 },
+  { 12, PPISTATUS, 0x20, 0 },
+  { 13, PPISTATUS, 0x10, 0 },
+  { 14, PPICTRL,   0x02, 1 }, 
+  { 15, PPISTATUS, 0x08, 0 },
+  { 16, PPICTRL,   0x04, 0 }, 
+  { 17, PPICTRL,   0x08, 1 }
+};
+
+#endif
+
+#define PPI_DATA_VCC_MASK       		( 0x01 | 0x02 | 0x04 | 0x08 )
+#define PPI_DATA_RESET_MASK    	( 0x20 )
+#define PPI_DATA_SCK_MASK        	( 0x40 )
+#define PPI_DATA_MOSI_MASK      	( 0x80 )
+
+#define PPI_STATUS_MISO_MASK  	( 0x40 )
+
+/* ---- Public Variables ------------------------------------------------- */
+/* ---- Private Constants and Types -------------------------------------- */
+
+#define USE_SYSCTL  1
+
+#if 1
+#   if USE_SYSCTL
+#       define ROBO_DEBUG( flag, fmt, args... ) do { if ( gDebug ## flag ) printk( "%s: " fmt, __FUNCTION__ , ## args ); } while (0)
+#   else
+#       define ROBO_DEBUG( flag, fmt, args... ) printk( "%s: " fmt, __FUNCTION__ , ## args )
+#   endif
+#else
+#   define ROBO_DEBUG( flag, fmt, args... )
+#endif
+
+#define SET_GPIO( pin, val )    do { if ( val ) { at91_set_gpio_value( pin, 1 ); } else { at91_set_gpio_value( pin, 0 ); }} while(0)
+#define GET_GPIO( pin )         (( GPLR( pin ) & GPIO_bit( pin )) != 0 )
+
+// The Alternate function register is 2 bits per pin, so we can't use the
+// GPIO_bit macro.
+
+#define GPIO_AF_shift(x)        		(((x) & 0x0F ) << 1 )
+#define GPIO_AF_mask(x)         	( 3 << GPIO_AF_shift( x ))
+
+/*
+ * Define the mappings between various GPIO pins and functions on the robostix
+ * board.
+ */
+
+#define ROBOSTIX_GPIO_ATM_RESET	    AT91_PIN_PA10
+#define ROBOSTIX_GPIO_ATM_SCK       AT91_PIN_PC24
+#define ROBOSTIX_GPIO_ATM_PGM_MOSI  AT91_PIN_PC25
+#define ROBOSTIX_GPIO_ATM_PGM_MISO  AT91_PIN_PA12
+
+
+typedef enum
+{
+    RoboStixGpioIn,
+    RoboStixGpioOut,
+} PinMode_e;
+
+typedef struct
+{
+    unsigned    grer;
+    unsigned    gfer;
+    unsigned    gafr;
+    unsigned    gpdr;
+    unsigned    gplr;
+
+} PinConfig_t;
+
+/* ---- Private Variables ------------------------------------------------ */
+
+#define ROBOSTIX_DEV_NAME   "robostix"
+
+static char gBanner[] __initdata = KERN_INFO "Robostix Driver: SVN: %d Compiled: " __DATE__ " at " __TIME__ "\n";
+
+static  PinConfig_t gIrTxdConfig;
+static  PinConfig_t gIrRxdConfig;
+
+dev_t           gRobostixDevNum;
+struct  cdev    gRobostixCDev;
+struct  class  *gRobostixClass;
+
+#if USE_SYSCTL
+
+static  int gDebugTrace = 0;
+static  int gDebugIoctl = 0;
+static  int gDebugError = 1;
+
+static  struct ctl_table_header    *gSysCtlHeader;
+
+static struct ctl_table gSysCtlRobostix[] =
+{
+    { CTL_ROBOSTIX_DEBUG_TRACE,     "debug-trace",  &gDebugTrace,   sizeof( int ), 0644, NULL, &proc_dointvec },
+    { CTL_ROBOSTIX_DEBUG_IOCTL,     "debug-ioctl",  &gDebugIoctl,   sizeof( int ), 0644, NULL, &proc_dointvec },
+    { CTL_ROBOSTIX_DEBUG_ERROR,     "debug-error",  &gDebugError,   sizeof( int ), 0644, NULL, &proc_dointvec },
+    { 0 }
+};
+
+static struct ctl_table gSysCtl[] =
+{
+    { CTL_ROBOSTIX, "robostix", NULL, 0, 0555, gSysCtlRobostix },
+    { 0 }
+};
+
+#endif  // USE_SYSCTL
+
+/* ---- Private Function Prototypes -------------------------------------- */
+
+static  void    robostix_configure_pin( int pin, PinMode_e pinMode );
+static  void    robostix_get_pin_config( int pin, PinConfig_t *pinConfig );
+static  void    robostix_set_pin_config( int pin, const PinConfig_t *pinConfig );
+
+static  void    robostix_exit( void );
+static  int     robostix_init( void );
+static  int     robostix_ioctl( struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg );
+static  int     robostix_open( struct inode *inode, struct file *file );
+static  int     robostix_release( struct inode *inode, struct file *file );
+
+/****************************************************************************
+*
+*   File Operations (these are the device driver entry points)
+*
+*****************************************************************************/
+
+static struct file_operations robostix_fops =
+{
+    owner:      THIS_MODULE,
+    ioctl:      robostix_ioctl,
+    open:       robostix_open,
+    release:    robostix_release,
+};
+
+/* ---- Functions -------------------------------------------------------- */
+
+/****************************************************************************
+*
+*   robostix_configure_pin
+*
+*   Configures a GPIO pin for use with the RoboStix.
+*
+*****************************************************************************/
+
+void robostix_configure_pin( int pin, PinMode_e pinMode )
+{
+    if ( pinMode == RoboStixGpioIn )
+    {
+        at91_set_gpio_input(pin,0);
+    }
+    else
+    {
+        at91_set_gpio_output(pin,1);
+    }
+
+} // robostix_configure_pin
+
+/****************************************************************************
+*
+*   robostix_get_pin_config
+*
+*   Retrieves the current pin configuration and stores it in @a pinConfig.
+*
+*****************************************************************************/
+
+void robostix_get_pin_config( int pin, PinConfig_t *pinConfig )
+{
+} // robostix_get_pin_config
+
+/****************************************************************************
+*
+*   robostix_set_pin_config
+*
+*   Restores the pin configuration to a previously saved comfiguration.
+*
+*****************************************************************************/
+
+void robostix_set_pin_config( int pin, const PinConfig_t *pinConfig )
+{   
+} // robostix_set_pin_config
+
+/****************************************************************************
+*
+*   robostix_exit
+*
+*   Called to perform module cleanup when the module is unloaded.
+*
+*****************************************************************************/
+
+void robostix_exit( void )
+{
+    ROBO_DEBUG( Trace, "called\n" );
+
+    class_device_destroy( gRobostixClass, gRobostixDevNum );
+    class_destroy( gRobostixClass );
+
+    cdev_del( &gRobostixCDev );
+
+#if USE_SYSCTL
+    if ( gSysCtlHeader != NULL )
+    {
+        unregister_sysctl_table( gSysCtlHeader );
+    }
+#endif
+
+    unregister_chrdev_region( gRobostixDevNum, 1 );
+
+#if 0
+    unregister_chrdev( ROBOSTIX_MAJOR, ROBOSTIX_DEV_NAME );
+#endif
+
+} // robostix_exit
+
+/****************************************************************************
+*
+*   robostix_init
+*
+*   Called to perform module initialization when the module is loaded.
+*
+*****************************************************************************/
+
+int __init robostix_init( void )
+{
+    int rc;
+
+    ROBO_DEBUG( Trace, "called\n" );
+
+    if (( rc = alloc_chrdev_region( &gRobostixDevNum, 0, 1, ROBOSTIX_DEV_NAME )) < 0 )
+    {
+        printk( KERN_WARNING "robostix: Unable to allocate major, err: %d\n", rc );
+        return rc;
+    }
+
+#if USE_SYSCTL
+    gSysCtlHeader = register_sysctl_table( gSysCtl, 0 );
+    if ( gSysCtlHeader != NULL )
+    {
+        gSysCtlHeader->ctl_table->child->de->owner = THIS_MODULE;
+    }
+#endif
+
+    // Initialize the various GPIO pins that control the Robostix.
+    //
+    //  IR_RXD      46  in  ATM_TX0 PE1     Acts as PDO or MISO for programming
+    //  IR_TXD      47  out ATM_RX0 PE0     Acts as PDI or MOSI for programming
+    //  L_DD15      73  out ATM_RESET       Resets the processor
+    //  NSSPCLK     81  out ATM_SCK         Acts as SCK for SPI use
+    //
+    // Configure the output pins. We set the GPIO value register before
+    // setting configuring it as a GPIO so that we don't create a glitch.
+
+    SET_GPIO( ROBOSTIX_GPIO_ATM_RESET, 0 );     // AVR held in Reset (active low)
+    robostix_configure_pin( ROBOSTIX_GPIO_ATM_RESET,    RoboStixGpioOut );
+
+    // The values of these pins don't really matter.
+
+    robostix_configure_pin( ROBOSTIX_GPIO_ATM_SCK,      RoboStixGpioOut );
+
+    // Don't change the configuration of the IR TxD/RxD here. Instead we
+    // save/restore using the PPCLAIM/PPRELEASE which brackets when avrdude
+    // is doing the actual programming.
+
+    // Register our device. The device becomes "active" as soon as cdev_add 
+    // is called.
+
+    cdev_init( &gRobostixCDev, &robostix_fops );
+    gRobostixCDev.owner = THIS_MODULE;
+
+    if (( rc = cdev_add( &gRobostixCDev, gRobostixDevNum, 1 )) != 0 )
+    {
+        printk( KERN_WARNING "robostix: cdev_add failed: %d\n", rc );
+        return rc;
+    }
+
+    gRobostixClass = class_create( THIS_MODULE, ROBOSTIX_DEV_NAME );
+    if ( IS_ERR( gRobostixClass ))
+    {
+        printk( KERN_WARNING "robostix: Unable to create class\n" );
+        return -1;
+    }
+
+    class_device_create( gRobostixClass, NULL, gRobostixDevNum, NULL, ROBOSTIX_DEV_NAME );
+
+    printk("Load Robostix Driver..\n");
+
+    return 0;
+
+} // robostix_init
+
+/****************************************************************************
+*
+*   robostix_ioctl
+*
+*   Called to process ioctl requests
+*
+*****************************************************************************/
+
+int robostix_ioctl( struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg )
+{
+    int err;
+    int userVal;
+
+    ROBO_DEBUG( Trace, "type: '%c' cmd: 0x%x\n", _IOC_TYPE( cmd ), _IOC_NR( cmd ));
+
+    if (( _IOC_TYPE( cmd ) != ROBOSTIX_IOCTL_MAGIC )
+    ||  ( _IOC_NR( cmd ) < ROBOSTIX_CMD_FIRST )
+    ||  ( _IOC_NR( cmd ) >= ROBOSTIX_CMD_LAST ))
+    {
+        // Since we emulate some of the parallel port commands, we need to allow
+        // those as well.
+
+        if (( _IOC_TYPE( cmd ) != PP_IOCTL )
+        ||  ( _IOC_NR( cmd ) < 0x80 )
+        ||  ( _IOC_NR( cmd ) >= 0x9b ))
+        {
+            return -ENOTTY;
+        }
+    }
+
+    // Note that _IOC_DIR Read/Write is from the perspective of userland. access_ok
+    // is from the perspective of kernelland.
+
+    err = 0;
+    if (( _IOC_DIR( cmd ) & _IOC_READ ) != 0 )
+    {
+        err |= !access_ok( VERIFY_WRITE, (void *)arg, _IOC_SIZE( cmd ));
+    }
+    if (( _IOC_DIR( cmd ) & _IOC_WRITE ) != 0 )
+    {
+        err |= !access_ok( VERIFY_READ, (void *)arg, _IOC_SIZE( cmd ));
+    }
+    if ( err )
+    {
+        ROBO_DEBUG( Error, "arg pointer is invalid\n" );
+        return -EFAULT;
+    }
+
+    switch ( cmd )
+    {
+        case ROBOSTIX_IOCTL_POWER_VCC5:
+        {
+            ROBO_DEBUG( Ioctl, "Power: %ld\n", arg );
+
+#if 1
+
+#else
+            // In order to truly power off the robostix, we need to turn off
+            // the voltage regulator. We assume that the '245 stays on so we
+            // continue to get our console. This also means that we need to
+            // take all of the GPIO lines low to eliminate any leak-thru 
+            // current.
+
+            if ( arg )
+            {
+                // Powering on - Configure I/O pins in "typical" manner.
+
+                // TODO: Probably set MOSI/SCK/SS back to NSSP
+                // TODO: Probably set IR TxD back to UART
+            }
+            else
+            {
+                // Powering off. Make them all GPIO's so that we can force
+                // them low.
+
+                SET_GPIO( ROBOSTIX_GPIO_ATM_RESET, 0 );
+                SET_GPIO( ROBOSTIX_GPIO_ATM_SCK,   0 );
+                SET_GPIO( ROBOSTIX_GPIO_ATM_PGM_MOSI, 0 );
+
+                robostix_configure_pin( ROBOSTIX_GPIO_ATM_RESET, RoboStixGpioOut );
+                robostix_configure_pin( ROBOSTIX_GPIO_ATM_SCK,   RoboStixGpioOut );
+                robostix_configure_pin( ROBOSTIX_GPIO_ATM_PGM_MOSI, RoboStixGpioOut );
+
+                // Grr - ATM_SCL and ATM_SDA are both pulled up to V_BATT,
+                // so we probably need to make these go low too, which effectively
+                // means that we lose the i2c bus.
+            }
+#endif
+            break;
+        }
+
+        case ROBOSTIX_IOCTL_RESET:
+        {
+            if ( arg == ROBOSTIX_PIN_PULSE )
+            {
+                // The ATMega128 datasheet says that the reset pulse needs
+                // to have a minimum pulse width of 1.5 usec.
+
+                ROBO_DEBUG( Ioctl, "Reset: %ld (pulse)\n", arg );
+
+                SET_GPIO( ROBOSTIX_GPIO_ATM_RESET, 0 ); // Reset is active low
+                udelay( 3 );
+                SET_GPIO( ROBOSTIX_GPIO_ATM_RESET, 1 );
+            }
+            else
+            {
+                // Reset is active low, so "on" means low
+
+                ROBO_DEBUG( Ioctl, "Reset: %ld\n", arg );
+
+                SET_GPIO( ROBOSTIX_GPIO_ATM_RESET, !arg );
+            }
+            break;
+        }
+
+        case ROBOSTIX_IOCTL_245_ENABLE:
+        {
+            // The 245 is active low, so we invert the sense of on/off
+
+            ROBO_DEBUG( Ioctl, "245 Enable: %ld\n", arg );
+
+            if ( arg != 0 )
+            {
+                printk( KERN_WARNING "Robostix: Warning turning '245 off - console may become inactive\n" );
+
+                // Allow some time for the above warning to get printed on the
+                // console before we turn it off.
+
+                set_current_state( TASK_INTERRUPTIBLE );
+                schedule_timeout( 2 );
+            }
+            break;
+        }
+
+        case ROBOSTIX_IOCTL_SET_SCK:    // out
+        {
+            ROBO_DEBUG( Ioctl, "Set SCK: %ld\n", arg );
+
+            SET_GPIO( ROBOSTIX_GPIO_ATM_SCK, arg );
+            break;
+        }
+
+        case ROBOSTIX_IOCTL_SET_SS:     // out
+        {
+            ROBO_DEBUG( Ioctl, "Set SS: %ld\n", arg );
+            break;
+        }
+
+        case ROBOSTIX_IOCTL_SET_IR_TXD: // out
+        {
+            // This particular ioctl should only ever be called as part of 
+            // somebody testing something. We assume that they'll be smart
+            // enough to reconfigure when they're done.
+
+            ROBO_DEBUG( Ioctl, "Set IR TxD: %ld\n", arg );
+
+            robostix_configure_pin( ROBOSTIX_GPIO_ATM_PGM_MOSI, RoboStixGpioOut );
+
+            SET_GPIO( ROBOSTIX_GPIO_ATM_PGM_MOSI, arg );
+            break;
+        }
+
+        case ROBOSTIX_IOCTL_GET_IR_RXD: // in
+        {
+            // This particular ioctl should only ever be called as part of 
+            // somebody testing something. We assume that they'll be smart
+            // enough to reconfigure when they're done.
+
+            robostix_configure_pin( ROBOSTIX_GPIO_ATM_PGM_MISO, RoboStixGpioIn );
+
+            userVal = at91_get_gpio_value(ROBOSTIX_GPIO_ATM_PGM_MISO);
+            if ( copy_to_user( (int *)arg, &userVal, sizeof( userVal )) != 0 )
+            {
+                return -EFAULT;
+            }
+
+            ROBO_DEBUG( Ioctl, "Get IR RxD: %d\n", userVal );
+            break;
+        }
+
+        case ROBOSTIX_IOCTL_SET_MOSI:   // out
+        {
+            ROBO_DEBUG( Ioctl, "Set MOSI: %ld\n", arg );
+            break;
+        }
+
+        case ROBOSTIX_IOCTL_GET_MISO:   // in
+        {
+            ROBO_DEBUG( Ioctl, "Get MISO: %d\n", userVal );
+            break;
+        }
+
+        case ROBOSTIX_IOCTL_GET_IRQ:    // in
+        {
+            ROBO_DEBUG( Ioctl, "Get IRQ: %d\n", userVal );
+            break;
+        }
+
+        case ROBOSTIX_IOCTL_DELAY_USEC:
+        {
+            ROBO_DEBUG( Ioctl, "Delay: %ld usecs\n", arg );
+
+            udelay( arg );
+            break;
+        }
+
+        //-------------------------------------------------------------------
+        //
+        // Parallel port interface. Some documentation on these ioctls can
+        // be found here: 
+        //  http://www.kernelnewbies.org/documents/kdoc/parportbook/x623.html
+        //
+
+        case PPRSTATUS:     // Read status register
+        {
+            unsigned char   statusReg = 0;
+            int             miso;
+
+            // The only thing mapped into the status register, is MISO.
+
+            miso = at91_get_gpio_value( ROBOSTIX_GPIO_ATM_PGM_MISO );
+
+
+            if ( miso )
+            {
+                statusReg |= PPI_STATUS_MISO_MASK;
+            }
+
+            ROBO_DEBUG( Ioctl, "PPRSTATUS: 0x%02x miso:%d\n", statusReg, miso ); 
+
+            if ( copy_to_user( (unsigned char *)arg, &statusReg, sizeof( statusReg )) != 0 )
+            {
+                return -EFAULT;
+            }
+            break;
+        }
+
+        case PPRCONTROL:    // Read control register
+        {
+            // Called once to initialize avrdude's shadow registers
+
+            unsigned char controlReg = 0;
+
+            ROBO_DEBUG( Ioctl, "PPRCONTROL: 0x%02x\n", controlReg ); 
+
+            if ( copy_to_user( (unsigned char *)arg, &controlReg, sizeof( controlReg )) != 0 )
+            {
+                return -EFAULT;
+            }
+            break;
+        }
+
+        case PPWCONTROL:    // Write control register
+        {
+            unsigned char controlReg = 0;
+
+            if ( copy_from_user( &controlReg, (unsigned char *)arg, sizeof( controlReg )) != 0 )
+            {
+                return -EFAULT;
+            }
+
+            ROBO_DEBUG( Ioctl, "PPWCONTROL: 0x%02x\n", controlReg ); 
+            break;
+        }
+
+        case PPRDATA:   // Read data register
+        {
+            // Called once to initialize avrdude's shadow registers
+
+            unsigned char   dataReg = 0;
+            int sck, reset, mosi;
+            int power = 0;
+
+            sck   = at91_get_gpio_value( ROBOSTIX_GPIO_ATM_SCK );
+            reset = at91_get_gpio_value( ROBOSTIX_GPIO_ATM_RESET );
+            mosi  = at91_get_gpio_value( ROBOSTIX_GPIO_ATM_PGM_MOSI );
+
+            if ( power )
+            {
+                dataReg |= PPI_DATA_VCC_MASK;
+            }
+            if ( reset )
+            {
+                dataReg |= PPI_DATA_RESET_MASK;
+            }
+            if ( sck )
+            {
+                dataReg |= PPI_DATA_SCK_MASK;
+            }
+            if ( mosi )
+            {
+                dataReg |= PPI_DATA_MOSI_MASK;
+            }
+
+            ROBO_DEBUG( Ioctl, "PPRDATA: 0x%02x pow:%d reset:%d sck:%d mosi: %d\n", dataReg, power, reset, sck, mosi ); 
+
+            if ( copy_to_user( (unsigned char *)arg, &dataReg, sizeof( dataReg )) != 0 )
+            {
+                return -EFAULT;
+            }
+            break;
+        }
+
+        case PPWDATA:   // Write data register
+        {
+            unsigned char   dataReg = 0;
+            int             power, sck, reset, mosi;
+            
+            if ( copy_from_user( &dataReg, (unsigned char *)arg, sizeof( dataReg )) != 0 )
+            {
+                return -EFAULT;
+            }
+
+            power = ( dataReg & PPI_DATA_VCC_MASK ) != 0;
+            sck   = ( dataReg & PPI_DATA_SCK_MASK ) != 0;
+            reset = ( dataReg & PPI_DATA_RESET_MASK ) != 0;
+            mosi  = ( dataReg & PPI_DATA_MOSI_MASK ) != 0;
+
+            ROBO_DEBUG( Ioctl, "PPWDATA: 0x%02x pow:%d reset:%d sck:%d mosi: %d\n", dataReg, power, reset, sck, mosi ); 
+
+            SET_GPIO( ROBOSTIX_GPIO_ATM_SCK,      sck );
+            SET_GPIO( ROBOSTIX_GPIO_ATM_RESET,    reset );
+            SET_GPIO( ROBOSTIX_GPIO_ATM_PGM_MOSI, mosi );
+            break;
+        }
+
+        case PPCLAIM:       // Claim the parallel port
+        {
+            ROBO_DEBUG( Ioctl, "PPCLAIM\n" );
+
+            // We use this opportunity to save away the state of the IR Txd/Rxd lines
+            // and convert them to GPIO.
+
+            robostix_get_pin_config( ROBOSTIX_GPIO_ATM_PGM_MOSI, &gIrTxdConfig );
+            robostix_get_pin_config(ROBOSTIX_GPIO_ATM_PGM_MISO, &gIrRxdConfig );
+
+            robostix_configure_pin( ROBOSTIX_GPIO_ATM_PGM_MOSI, RoboStixGpioOut );
+            robostix_configure_pin( ROBOSTIX_GPIO_ATM_PGM_MISO, RoboStixGpioIn );
+            break;
+        }
+
+        case PPRELEASE:     // Release the parallel port
+        {
+            ROBO_DEBUG( Ioctl, "PPRELEASE\n" );
+
+            // We use this opportunity to restore the state of the IR Txd/Rxd lines
+            // back to what they were.
+
+            robostix_set_pin_config( ROBOSTIX_GPIO_ATM_PGM_MOSI, &gIrTxdConfig );
+            robostix_set_pin_config( ROBOSTIX_GPIO_ATM_PGM_MISO, &gIrRxdConfig );
+            break;
+        }
+
+        case PPDATADIR:
+        {
+            int dataDirReg;
+
+            if ( copy_from_user( &dataDirReg, (int *)arg, sizeof( dataDirReg )) != 0 )
+            {
+                return -EFAULT;
+            }
+
+            ROBO_DEBUG( Ioctl, "PPDATADIR: 0x%02x\n", dataDirReg );
+            break;
+        }
+
+        default:
+        {
+            ROBO_DEBUG( Error, "Unrecognized ioctl: '0x%x'\n", cmd );
+            return -ENOTTY;
+        }
+    }
+
+    return 0;
+
+} // robostix_ioctl
+
+/****************************************************************************
+*
+*   robostix_open
+*
+*   Called to process open requests
+*
+*****************************************************************************/
+
+int robostix_open( struct inode *inode, struct file *file )
+{
+    ROBO_DEBUG( Trace, "major = %d, minor = %d\n", MAJOR( inode->i_rdev ),  MINOR( inode->i_rdev ));
+                
+    return 0;
+
+} // robostix_open
+
+/****************************************************************************
+*
+*   robostix_release
+*
+*   Called when the last istance is closed.
+*
+*****************************************************************************/
+
+int robostix_release( struct inode *inode, struct file *file )
+{
+    ROBO_DEBUG( Trace, "called\n" );
+
+    return 0;
+
+} // robostix_release
+
+/****************************************************************************/
+
+module_init(robostix_init);
+module_exit(robostix_exit);
+
+MODULE_AUTHOR("Dave Hylands");
+MODULE_DESCRIPTION("gumstix/robostix driver");
+MODULE_LICENSE("Dual BSD/GPL");
+

@@ -1,0 +1,45 @@
+NET clk LOC = "P80";
+
+#ADDRESS BUS
+#NET "addr<18>" LOC = "P197";
+#NET "addr<17>" LOC = "P205";
+#NET "addr<16>" LOC = "P204";
+#NET "addr<15>" LOC = "P203";
+#NET "addr<14>" LOC = "P200";
+#NET "addr<13>" LOC = "P199";
+#NET "addr<12>" LOC = "P198";
+#NET "addr<11>" LOC = "P2";
+NET "addr<9>" LOC = "P3";
+NET "addr<8>"  LOC = "P4";
+NET "addr<7>"  LOC = "P5";
+NET "addr<6>"  LOC = "P7";
+NET "addr<5>"  LOC = "P9";
+NET "addr<4>"  LOC = "P10";
+NET "addr<3>"  LOC = "P11";
+NET "addr<2>"  LOC = "P12";
+NET "addr<1>"  LOC = "P13";
+NET "addr<0>"  LOC = "P15";
+#NET "addr<0>"  LOC = "P16";
+#DATA BUS
+NET "sram_data<15>" LOC = "P167";
+NET "sram_data<14>" LOC = "P168";
+NET "sram_data<13>" LOC = "P169";
+NET "sram_data<12>" LOC = "P171";
+NET "sram_data<11>" LOC = "P172";
+NET "sram_data<10>" LOC = "P175";
+NET "sram_data<9>"  LOC = "P176";
+NET "sram_data<8>"  LOC = "P178";
+NET "sram_data<7>"  LOC = "P180";
+NET "sram_data<6>"  LOC = "P181";
+NET "sram_data<5>"  LOC = "P182";
+NET "sram_data<4>"  LOC = "P183";
+NET "sram_data<3>"  LOC = "P184";
+NET "sram_data<2>"  LOC = "P185";
+NET "sram_data<1>"  LOC = "P187";
+NET "sram_data<0>"  LOC = "P189";
+#CONTROL BUS
+
+NET "nwe"   LOC = "P190";
+NET "noe"   LOC = "P191";
+
+NET "ncs"  LOC = "P196";

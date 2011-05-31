@@ -1,0 +1,61 @@
+NET clk   LOC = "P80";
+NET reset LOC = "P68"; 
+NET led   LOC = "P152";
+
+NET "nwe"   LOC = "P190";
+NET "nrd"   LOC = "P191";
+NET "ncs"   LOC = "P196";
+NET "nIRQ"	LOC = "P156";
+
+#ADDRESS BUS
+#NET "A<18>" LOC = "P197";
+#NET "A<17>" LOC = "P205";
+#NET "A<16>" LOC = "P204";
+#NET "A<15>" LOC = "P203";
+#NET "A<14>" LOC = "P200";
+#NET "A<13>" LOC = "P199";
+#NET "A<12>" LOC = "P198";
+#NET "A<11>" LOC = "P2";
+NET "A<9>" LOC = "P3";
+NET "A<8>"  LOC = "P4";
+NET "A<7>"  LOC = "P5";
+NET "A<6>"  LOC = "P7";
+NET "A<5>"  LOC = "P9";
+NET "A<4>"  LOC = "P10";
+NET "A<3>"  LOC = "P11";
+NET "A<2>"  LOC = "P12";
+NET "A<1>"  LOC = "P13";
+NET "A<0>"  LOC = "P15";
+#NET "A<0>"  LOC = "P16";
+#DATA BUS
+#NET "D<15>" LOC = "P167";
+#NET "D<14>" LOC = "P168";
+#NET "D<13>" LOC = "P169";
+#NET "D<12>" LOC = "P171";
+#NET "D<11>" LOC = "P172";
+#NET "D<10>" LOC = "P175";
+#NET "D<9>"  LOC = "P176";
+#NET "D<8>"  LOC = "P178";
+NET "D<7>"  LOC = "P180";
+NET "D<6>"  LOC = "P181";
+NET "D<5>"  LOC = "P182";
+NET "D<4>"  LOC = "P183";
+NET "D<3>"  LOC = "P184";
+NET "D<2>"  LOC = "P185";
+NET "D<1>"  LOC = "P187";
+NET "D<0>"  LOC = "P189";
+#CONTROL BUS
+
+
+
+NET "RxD0"	LOC = "P45";
+NET "TxD0"	LOC = "P46";
+NET "RxD1"	LOC = "P48";
+NET "TxD1"	LOC = "P50";
+NET "RxD2"	LOC = "P51";
+NET "TxD2"	LOC = "P52";
+NET "RxD3"	LOC = "P57";
+NET "TxD3"	LOC = "P58";
+
+
+

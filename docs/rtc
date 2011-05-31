@@ -1,0 +1,4 @@
+date 051511112008
+hwclock --systohc
+antes:
+date [MMDDhhmm[[CC]YY][.ss]]
